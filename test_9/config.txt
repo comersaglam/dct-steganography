@@ -1,0 +1,3 @@
+small_img_size: 16
+alpha: 0.01
+method: high_freq

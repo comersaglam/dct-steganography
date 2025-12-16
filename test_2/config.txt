@@ -1,0 +1,3 @@
+smallsize = 16
+method = center
+alpha = 0.1

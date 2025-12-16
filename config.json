@@ -1,0 +1,8 @@
+{
+    "encrypt": false,
+    "encryption_key": "eU9BUXRPdE5PZzctYURETG1jMnIta25IcV81aTZPNF9LUGtQZ0dsRmNUdz0=",
+    "method": "high_freq",
+    "alpha": 0.01,
+    "p": 31,
+    "q": 29
+}
