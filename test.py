@@ -1,56 +1,9 @@
-"""
-test.py - DCT Steganography Testing and Visualization Suite
-
-This script performs a complete round-trip test of the steganography pipeline:
-1. Embedding a small image into a big image
-2. Extracting the hidden image back
-3. Comparing original and extracted images
-4. Generating comprehensive visualizations
-
-Output:
-    Creates a test_N directory with:
-        - complete_pipeline.png: 3x3 visualization grid showing all steps
-        - Individual images at each pipeline stage
-        - config.txt: Test parameters used
-        - Error statistics
-
-Configuration:
-    Adjust parameters at the top of main section:
-        - small_img_size: Size of hidden image (8, 16, 32, etc.)
-        - big_img_size: Size of cover image (typically 8x small_img_size)
-        - alpha: Embedding strength (0.001-0.5)
-        - method: 'center' or 'high_freq'
-
-Usage:
-    python test.py
-    
-Visualization Grid (3x3):
-    Row 1: Original big image | Original small image | Small DCT
-    Row 2: Big DCT | Embedded DCT | Reconstructed big image  
-    Row 3: Re-DCT | Extracted DCT | Extracted small image (with error)
-
-Performance Notes:
-    - Small alpha (<0.01) may cause high errors due to quantization
-    - Larger images accumulate more error
-    - High-frequency embedding is more robust but more visible
-"""
-
 import numpy as np
 import cv2
 from dct import *
 from embed import *
 from receiver import *
-
 def print_image(img):
-    """
-    Print a subset of image values to console for debugging.
-    
-    Args:
-        img (np.ndarray): Image array with shape (H, W, C)
-    
-    Prints:
-        Green channel values in a formatted grid
-    """
     height, width, channels = img.shape
     channel_names = ['B', 'G', 'R'] if channels == 3 else [f'Ch{i}' for i in range(channels)]
     

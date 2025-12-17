@@ -1,48 +1,6 @@
-"""
-embed.py - DCT Steganography Embedding Functions
-
-This module implements the core embedding logic for hiding a small image within a larger image
-using Discrete Cosine Transform (DCT) coefficients.
-
-Key Concepts:
-    - Embedding occurs in the frequency domain (DCT coefficients)
-    - Small DCT coefficients are distributed across big image DCT using stride-based positioning
-    - Optional modular exponentiation encryption for security
-    - Alpha parameter controls embedding strength
-
-Embedding Formula:
-    Without encryption: z = alpha * y
-    With encryption: z = x + alpha * (y^p mod q)
-    
-    Where:
-        x = big image DCT coefficient
-        y = small image DCT coefficient  
-        z = embedded (combined) coefficient
-        alpha = embedding strength parameter
-        p, q = encryption parameters
-"""
-
 import numpy as np
 
 def encrypt(x, y, alpha, p, q, encrypt_flag):
-    """
-    Embed a small image DCT coefficient into a big image DCT coefficient.
-    
-    Args:
-        x (float): Big image DCT coefficient
-        y (float): Small image DCT coefficient to embed
-        alpha (float): Embedding strength (typical range: 0.01-0.5)
-        p (int): Encryption exponent
-        q (int): Encryption modulus
-        encrypt_flag (bool): Whether to use modular exponentiation encryption
-    
-    Returns:
-        float: Combined/embedded DCT coefficient
-    
-    Formula:
-        - Without encryption: z = alpha * y
-        - With encryption: z = x + alpha * (y^p mod q)
-    """
     #* x + alpha f(y) = z where fy = y^p mod q
     if not encrypt_flag:
         return alpha * y
@@ -51,57 +9,6 @@ def encrypt(x, y, alpha, p, q, encrypt_flag):
     return z
 
 def decrypt(z, alpha, p, q, encrypt_flag):
-    """
-    Extract the hidden small image DCT coefficient from an embedded coefficient.
-    
-    Args:
-        z (float): Embedded DCT coefficient
-        alpha (float): Embedding strength used during embedding
-        p (int): Encryption exponent
-        q (int): Encryption modulus
-        encrypt_flag (bool): Whether encryption was used during embedding
-def embed_3d(big_dct, small_dct, config):
-    """
-    Embed a 3D small image DCT into a 3D big image DCT (processes all color channels).
-    
-    Args:
-        big_dct (np.ndarray): Big image DCT coefficients, shape (H, W, C)
-        small_dct (np.ndarray): Small image DCT coefficients, shape (h, w, C)
-        config (dict): Configuration containing:
-            - alpha: embedding strength
-            - p, q: encryption parameters
-            - encrypt: encryption flag
-def embed_2d(big_dct_channel, small_dct_channel, config):
-    """
-    Embed small DCT into big DCT for a single channel using stride-based positioning.
-    
-    Args:
-        big_dct_channel (np.ndarray): Big image DCT for one channel, shape (H, W)
-        small_dct_channel (np.ndarray): Small image DCT for one channel, shape (h, w)
-        config (dict): Configuration dictionary
-    
-    Returns:
-        np.ndarray: Combined DCT with embedded coefficients, shape (H, W)
-    
-    Embedding Strategy:
-        - Divides big DCT into a grid based on small DCT dimensions
-        - Stride = big_dimension / small_dimension
-        - Places each small coefficient at a specific position within its corresponding block:
-            * 'center': middle of each block (stride_h // 2, stride_w // 2)
-            * 'high_freq': high-frequency corner (stride_h - 1, stride_w - 1)
-    
-    Example:
-        Small: 32x32, Big: 256x256
-        Stride: 8x8
-        Each small coefficient embeds into one of 1024 blocks (32x32 grid of 8x8 blocks)
-    """ Applies embed_2d independently to each color channel (B, G, R).
-    """
-        float: Extracted small image DCT coefficient
-    
-    Formula:
-        - Without encryption: y = z / alpha
-        - With encryption: y = ((z - x) / alpha)^(p^-1 mod (q-1)) mod q
-    """
     #* f(y) = (z - x) / alpha  => y = (f(y))^(p^-1 mod q-1) mod q
     if not encrypt_flag:
         return z / alpha

@@ -1,22 +1,3 @@
-"""
-jpgToPng.py - JPEG to PNG Converter
-
-This module converts JPEG images to PNG format for preprocessing before steganography operations.
-PNG format is lossless and more suitable for DCT-based steganography as it preserves exact pixel values.
-
-Directory Structure:
-    - Input: jpg/ (contains JPEG/JPG files)
-    - Output: img/ (saves converted PNG files)
-
-Usage:
-    python jpgToPng.py
-
-Features:
-    - Batch conversion of all JPG/JPEG files in the jpg directory
-    - Automatic RGBA to RGB conversion for compatibility
-    - Error handling for corrupted or unsupported files
-"""
-
 from PIL import Image
 import os
 
