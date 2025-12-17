@@ -1,3 +1,61 @@
+"""
+receiver.py - Image Steganography Extraction Script
+
+This script extracts a hidden small image from an embedded image created by sender.py.
+
+Process:
+    1. Load embedded image from img_embed directory
+    2. Apply 3D DCT to embedded image
+    3. Extract small DCT coefficients from specific positions
+    4. Decrypt extracted coefficients
+    5. Apply inverse DCT to get spatial domain small image
+    6. Save extracted image
+
+Configuration:
+    Must use the SAME config.json as sender.py:
+        - alpha: Must match embedding alpha
+        - method: Must match embedding method
+        - encrypt: Must match embedding encryption setting
+        - p, q: Must match encryption parameters
+
+def extract_2d(embedded_dct_channel, small_h, small_w, config):
+    """
+    Extract small DCT from a single channel using stride-based positioning.
+    
+    Args:
+        embedded_dct_channel (np.ndarray): Embedded DCT for one channel, shape (H, W)
+        small_h (int): Target small image height
+        small_w (int): Target small image width
+        config (dict): Configuration dictionary
+    
+    Returns:
+        np.ndarray: Extracted small DCT, shape (small_h, small_w)
+    
+    Extraction Strategy:
+        - Must use SAME stride and positioning logic as embed_2d
+        - Reads coefficients from predetermined positions
+        - Applies decrypt function to recover original small coefficients
+        
+    Critical:
+        config['method'] must match the method used during embedding!
+    """
+    #* size is 32*32: img_embed/embedded_result_11.png (or specified)
+    
+Output:
+    - Extracted image: img_extracted/extracted_N.png (N auto-increments)
+
+Usage:
+    python receiver.py
+    
+Example:
+    $ python receiver.py
+    Embedded image loaded from 'img_embed/embedded_result_11.png'
+    Configuration loaded.
+    DCT applied to embedded image.
+    Extraction process completed. Extracted size: 32x32
+    Extraction complete! Result saved as 'img_extracted/extracted_0.png'
+"""
+
 import numpy as np
 import cv2
 from embed import *
@@ -7,7 +65,21 @@ from dct import *
 
 
 def extract_3d(embedded_dct, small_h, small_w, config):
-    """Extract small DCT from embedded DCT based on configuration"""
+    """
+    Extract small 3D DCT from embedded DCT (processes all color channels).
+    
+    Args:
+        embedded_dct (np.ndarray): Embedded image DCT, shape (H, W, C)
+        small_h (int): Target small image height
+        small_w (int): Target small image width
+        config (dict): Configuration with extraction parameters
+    
+    Returns:
+        np.ndarray: Extracted small DCT, shape (small_h, small_w, C)
+    
+    Note:
+        Applies extract_2d independently to each color channel.
+    """
     big_h, big_w, big_d = embedded_dct.shape
     
     extracted_dct = np.zeros((small_h, small_w, big_d))
@@ -27,7 +99,19 @@ def extract_2d(embedded_dct_channel, small_h, small_w, config):
     stride_w = big_w // small_w
 
     for sx in range(small_h):
-        for sy in range(small_w):
+def main():
+    """
+    Main extraction workflow.
+    
+    Steps:
+        1. Load embedded image from disk
+        2. Load configuration (must match embedding config!)
+        3. Transform embedded image to frequency domain (DCT)
+        4. Extract small DCT from specific positions
+        5. Decrypt extracted coefficients
+        6. Transform back to spatial domain (IDCT)
+        7. Save result with auto-incremented filename
+    """ sy in range(small_w):
             #position in big image
             if config['method'] == 'center':
                 bx = sx * stride_h + stride_h // 2

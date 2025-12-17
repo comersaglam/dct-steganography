@@ -1,3 +1,3 @@
-smallsize = 16
-method = high_freq
-alpha = 0.1
+small_img_size: 16
+alpha: 0.01
+method: high_freq

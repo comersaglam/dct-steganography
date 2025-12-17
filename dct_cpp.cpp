@@ -1,3 +1,24 @@
+/*
+ * dct_cpp.cpp - Optimized C++ DCT Implementation with Python Bindings
+ * 
+ * This module provides high-performance DCT/IDCT implementations using C++,
+ * exposed to Python via pybind11 for significant speed improvements over pure Python.
+ * 
+ * Performance:
+ *     ~10-100x faster than pure Python implementation for large images
+ * 
+ * Functions:
+ *     - dct_1d, dct_2d, dct_3d: Forward DCT transforms
+ *     - idct_1d, idct_2d, idct_3d: Inverse DCT transforms
+ * 
+ * Compilation:
+ *     python setup.py build_ext --inplace
+ * 
+ * Usage from Python:
+ *     import dct_cpp
+ *     result = dct_cpp.dct_2d(image)
+ */
+
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -140,7 +161,7 @@ std::vector<std::vector<std::vector<double>>> idct_3d(const std::vector<std::vec
 
 // Pybind11 Module
 PYBIND11_MODULE(dct_cpp, m) {
-    m.doc() = "C++ DCT implementation for steganography";
+    m.doc() = "C++ DCT implementation for steganography - optimized for performance";
     
     m.def("dct_1d", &dct_1d, "Compute 1D Discrete Cosine Transform",
           py::arg("image"));

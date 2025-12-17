@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env/
+venv/
+env/
+
+# Images (don't commit test images)
+img/
+img_8/
+img_16/
+img_32/
+img_64/
+img_128/
+img_256/
+img_512/
+img_embed/
+img_extracted/
+us/
+test_*/
+
+# Build files
+build/
+dist/
+*.egg-info/
+*.so
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

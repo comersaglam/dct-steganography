@@ -1,9 +1,42 @@
+"""
+resize.py - Image Preprocessing Utility
+
+This module prepares images for DCT steganography by:
+1. Center-cropping images to square dimensions
+2. Resizing to standard sizes (256x256 for big images, 8x8/16x16/32x32 for small images)
+
+The resizing process uses LANCZOS resampling for high quality and maintains RGB color mode.
+
+Directory Structure:
+    - Input: img/ (original images)
+    - Output: img_256/, img_8/ (or other sizes based on configuration)
+
+Usage:
+    python resize.py
+
+Configuration:
+    Modify output_256_dir and output_32_dir variables to change target sizes.
+"""
+
 from PIL import Image
 import os
 
 def resize_image(img, target_size):
     """
     Crop image to square (center crop), then resize to target size.
+    
+    Args:
+        img (PIL.Image): Input image to process
+        target_size (int): Target square dimension (e.g., 256 for 256x256)
+    
+    Returns:
+        PIL.Image: Cropped and resized square image
+    
+    Process:
+        1. Determine minimum dimension (width or height)
+        2. Calculate center crop coordinates
+        3. Crop to square
+        4. Resize using high-quality LANCZOS resampling
     """
     # Get original dimensions
     width, height = img.size

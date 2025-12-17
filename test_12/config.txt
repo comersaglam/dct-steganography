@@ -1,3 +1,0 @@
-small_img_size: 16
-alpha: 0.001
-method: center
