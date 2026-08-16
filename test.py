@@ -46,7 +46,7 @@ reconstructed_test = idct_3d(embedded_img)
 
 # extraction test - use small_img_size
 img_embed = dct_3d(reconstructed_test)
-extracted_dct = extract_3d(img_embed, small_img_size, small_img_size, {
+extracted_dct = extract_3d(img_embed, dct_test, small_img_size, small_img_size, {
     'alpha': alpha,
     'p': 3,
     'q': 5,

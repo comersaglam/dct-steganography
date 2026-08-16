@@ -6,20 +6,26 @@ import os
 from dct import *
 
 
-def extract_3d(embedded_dct, small_h, small_w, config):
-    """Extract small DCT from embedded DCT based on configuration"""
+def extract_3d(embedded_dct, cover_dct, small_h, small_w, config):
+    """Extract small DCT from embedded DCT based on configuration.
+
+    `cover_dct` is the DCT of the ORIGINAL cover image. It is required because
+    embedding stored z = x + alpha*f(y); recovering y means undoing the `+ x`.
+    This makes the scheme non-blind: the receiver needs the original cover.
+    """
     big_h, big_w, big_d = embedded_dct.shape
-    
+
     extracted_dct = np.zeros((small_h, small_w, big_d))
-    
+
     for ch in range(big_d):
-        extracted_dct[:, :, ch] = extract_2d(embedded_dct[:, :, ch],  small_h, small_w, config)
-    
+        extracted_dct[:, :, ch] = extract_2d(
+            embedded_dct[:, :, ch], cover_dct[:, :, ch], small_h, small_w, config
+        )
+
     return extracted_dct
 
 
-def extract_2d(embedded_dct_channel, small_h, small_w, config):
-    #* size is 32*32
+def extract_2d(embedded_dct_channel, cover_dct_channel, small_h, small_w, config):
     big_h, big_w = embedded_dct_channel.shape
     extracted_dct = np.zeros((small_h, small_w))
 
@@ -29,15 +35,11 @@ def extract_2d(embedded_dct_channel, small_h, small_w, config):
     for sx in range(small_h):
         for sy in range(small_w):
             #position in big image
-            if config['method'] == 'center':
-                bx = sx * stride_h + stride_h // 2
-                by = sy * stride_w + stride_w // 2
-            elif config['method'] == 'high_freq':
-                bx = (sx + 1) * stride_h - 1
-                by = (sy + 1) * stride_w - 1
+            bx, by = target_position(sx, sy, stride_h, stride_w, config['method'])
             val = embedded_dct_channel[bx, by]
             extracted_val = decrypt(
                 val,
+                cover_dct_channel[bx, by],
                 config['alpha'],
                 config['p'],
                 config['q'],
@@ -49,36 +51,41 @@ def extract_2d(embedded_dct_channel, small_h, small_w, config):
 
 def main():
     embedded_img_path = 'img_embed/embedded_result_11.png' # and 12
-    output_path = 'img_extracted/extracted.png'
-    
+    cover_img_path = 'img_256/img1.png'  # the ORIGINAL cover used by sender.py
+
     # Create output directory if it doesn't exist
     os.makedirs('img_extracted', exist_ok=True)
 
     # Read embedded image and original big image
     embedded_img = cv2.imread(embedded_img_path)
     print(f"Embedded image loaded from '{embedded_img_path}'")
-    
+
+    cover_img = cv2.imread(cover_img_path)
+    print(f"Cover image loaded from '{cover_img_path}'")
+
     # Load configuration
     with open('config.json', 'r') as f:
         config = json.load(f)
     print("Configuration loaded.")
 
     # Apply DCT to both embedded and original images
-    embedded_dct = dct_3d(embedded_img)
-    print("DCT applied to embedded image.")
-    
+    embedded_dct = dct_3d_fast(embedded_img)
+    cover_dct = dct_3d_fast(cover_img)
+    print("DCT applied to embedded and cover images.")
+
     # Extract the small image DCT
-    # Get dimensions from embedded image - assuming 256x256 big, 32x32 small
+    # Ratio between cover and hidden image (8x by default)
     big_h, big_w, _ = embedded_img.shape
-    small_h = 32  # You can make this configurable
-    small_w = 32
-    
-    extracted_dct = extract_3d(embedded_dct, small_h, small_w, config)
+    ratio = config.get('ratio', 8)
+    small_h = big_h // ratio
+    small_w = big_w // ratio
+
+    extracted_dct = extract_3d(embedded_dct, cover_dct, small_h, small_w, config)
     print(f"Extraction process completed. Extracted size: {small_h}x{small_w}")
     print(f"Extracted DCT range: [{extracted_dct.min():.2f}, {extracted_dct.max():.2f}]")
     
     # Apply inverse DCT to get the image back
-    extracted_img = idct_3d(extracted_dct)
+    extracted_img = idct_3d_fast(extracted_dct)
     print(f"Extracted image range: [{extracted_img.min():.2f}, {extracted_img.max():.2f}]")
     
     # Save result

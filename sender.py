@@ -32,17 +32,16 @@ def main():
         config = json.load(f)
     print("Configuration loaded.")
 
-    big_dct = dct_3d(big_img)
-    small_dct = dct_3d(small_img)
+    big_dct = dct_3d_fast(big_img)
+    small_dct = dct_3d_fast(small_img)
     print("DCT applied to both images.")
-    
+
     comb = embed_3d(big_dct, small_dct, config)
     print("Embedding process completed.")
-    
-    
+
     # Save result
-    comb_img = idct_3d(comb)
-    cv2.imwrite(output_path, comb_img)
+    comb_img = idct_3d_fast(comb)
+    cv2.imwrite(output_path, np.clip(np.rint(comb_img), 0, 255).astype(np.uint8))
     print(f"Embedding complete! Result saved as '{output_path}'")
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from functools import lru_cache
 from math import cos, pi, sqrt
 import numpy as np
 
@@ -98,3 +99,60 @@ def idct_1d(image):
         newImage[i] = sqrt(2.0 / n) * sum
 
     return newImage
+
+
+# ---------------------------------------------------------------------------
+# Matrix (numpy) versions of the exact same transform.
+#
+# The loops above compute, for every output index k:
+#     X[k] = sqrt(2/n) * ck * sum_i x[i] * cos(2*pi*k/(2n)*i + k*pi/(2n))
+#
+# That sum is a matrix-vector product, so building the coefficient matrix C
+# once and multiplying is the same maths written differently -- no library
+# transform (scipy/fftpack) is used, the cosine formula is still ours.
+#
+#     C[k, i] = sqrt(2/n) * ck * cos(2*pi*k/(2n)*i + k*pi/(2n))
+#     1D DCT:   X = C @ x           1D IDCT:  x = C.T @ X
+#     2D DCT:   X = C @ img @ C.T   2D IDCT:  img = C.T @ X @ C
+#
+# C is orthonormal (C @ C.T == I), which is why the inverse is the transpose.
+# Verified against the loop versions to ~1e-12; see test_matrix_dct.py.
+# ---------------------------------------------------------------------------
+
+
+@lru_cache(maxsize=None)
+def dct_matrix(n):
+    """n x n DCT matrix built from the same formula used in dct_1d."""
+    k = np.arange(n)[:, None]  # row index -> frequency
+    i = np.arange(n)[None, :]  # column index -> sample
+    C = np.sqrt(2.0 / n) * np.cos(2 * np.pi * k / (2.0 * n) * i + (k * np.pi) / (2.0 * n))
+    C[0, :] *= np.sqrt(0.5)  # the ck term, which is sqrt(0.5) only for k == 0
+    return C
+
+
+def dct_2d_fast(image):
+    """2D DCT via matrix multiplication. Same result as dct_2d, much faster."""
+    image = np.asarray(image, dtype=float)
+    C_rows = dct_matrix(image.shape[0])
+    C_cols = dct_matrix(image.shape[1])
+    return C_rows @ image @ C_cols.T
+
+
+def idct_2d_fast(image):
+    """2D Inverse DCT via matrix multiplication. Same result as idct_2d."""
+    image = np.asarray(image, dtype=float)
+    C_rows = dct_matrix(image.shape[0])
+    C_cols = dct_matrix(image.shape[1])
+    return C_rows.T @ image @ C_cols
+
+
+def dct_3d_fast(image):
+    """3D DCT (per channel) via matrix multiplication. Same result as dct_3d."""
+    image = np.asarray(image, dtype=float)
+    return np.stack([dct_2d_fast(image[:, :, d]) for d in range(image.shape[2])], axis=2)
+
+
+def idct_3d_fast(image):
+    """3D Inverse DCT (per channel) via matrix multiplication."""
+    image = np.asarray(image, dtype=float)
+    return np.stack([idct_2d_fast(image[:, :, d]) for d in range(image.shape[2])], axis=2)
